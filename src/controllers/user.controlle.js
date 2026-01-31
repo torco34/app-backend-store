@@ -11,12 +11,13 @@ const registerUser = async (req, res) => {
         if (userExist) {
             return res.status(400).json({ message: 'El usuario ya existe' });
         }
-
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
         // crear usuario
         const newUser = new User({
             name,
             email,
-            password
+            password: hashedPassword
         });
 
         await newUser.save();
@@ -52,7 +53,7 @@ const loginUser = async (req, res) => {
         const token = jwt.sign(
             { id: user._id, email: user.email },
             process.env.JWT_SECRET || 'mi_secreto',
-            { expiresIn: '1h' }
+            { expiresIn: '1d' }
         );
 
         res.json({ message: 'Login exitoso ', token });
